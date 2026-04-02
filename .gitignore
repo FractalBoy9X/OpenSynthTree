@@ -1,0 +1,23 @@
+# Downloaded models & data (~8.5 GB)
+data/
+
+# Generated output (PNG images)
+output/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+._*
+Thumbs.db

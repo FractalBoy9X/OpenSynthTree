@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    image: retro_chem:latest
+    container_name: retro_chem
+    stdin_open: true    # -i (interaktywny input)
+    tty: true           # -t (pseudo-terminal)
+    environment:
+      - RETROCHEM_DEVICE=cpu
+    volumes:
+      # Dane modeli AiZynthFinder (~790 MB) — persystentne
+      - ./data/aizynth_data:/app/data/aizynth_data
+
+      # Baza rxn-insight (~1.5 GB) — persystentne
+      - ./data/rxn_insight_data:/app/data/rxn_insight_data
+
+      # Cache modeli HuggingFace MolT5 (~6.3 GB) — persystentne
+      - ./data/huggingface_cache:/root/.cache/huggingface
+
+      # Wyniki (PNG, obrazy tras) — dostępne z hosta
+      - ./output:/app/output

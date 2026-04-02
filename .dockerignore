@@ -1,0 +1,30 @@
+# Dane (montowane jako volumes, nie kopiowane do obrazu)
+data/
+output/
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+._*
+
+# Dokumentacja (nie potrzebna w obrazie)
+*.md
+!requirements.txt
+LICENSE
