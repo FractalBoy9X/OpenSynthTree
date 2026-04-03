@@ -1,72 +1,72 @@
-# retro_chem — Docker Open-Source
+# OpenSynthTree — Docker Open-Source
 
-Kontenerowa wersja narzędzia **retro_chem** do analizy cząsteczek chemicznych.
+A containerized toolkit for chemical molecule analysis.
 
-Łączy:
-- **MolT5** — tłumaczenie SMILES na opisy tekstowe i odwrotnie
-- **AiZynthFinder** — retrosynteza z użyciem modeli USPTO
-- **rxn-insight** — klasyfikacja reakcji, grupy funkcyjne, produkty uboczne, warunki
-- **PubChem API** — wyszukiwanie cząsteczek po nazwie
-- **RDKit** — walidacja SMILES i wizualizacja struktur 2D
+Combines:
+- **MolT5** — SMILES-to-text and text-to-SMILES translation
+- **AiZynthFinder** — retrosynthesis using USPTO models
+- **rxn-insight** — reaction classification, functional groups, by-products, conditions
+- **PubChem API** — molecule lookup by name
+- **RDKit** — SMILES validation and 2D structure visualization
 
-## Wymagania
+## Requirements
 
 - **Docker** >= 20.10
 - **Docker Compose** >= 2.0
-- **~16 GB wolnego miejsca** (modele + dane):
-  - ~790 MB — modele AiZynthFinder (USPTO ONNX)
-  - ~1.5 GB — baza rxn-insight (Zenodo)
-  - ~6.3 GB — modele MolT5 HuggingFace (cache)
-  - ~4 GB — obraz Docker (Python + zależności)
-- **Połączenie z internetem** (pobieranie modeli, PubChem API)
+- **~16 GB of free disk space** (models + data):
+  - ~790 MB — AiZynthFinder models (USPTO ONNX)
+  - ~1.5 GB — rxn-insight database (Zenodo)
+  - ~6.3 GB — MolT5 HuggingFace models (cache)
+  - ~4 GB — Docker image (Python + dependencies)
+- **Internet connection** (model downloads, PubChem API)
 
-## Szybki start
+## Quick start
 
 ```bash
-# 1. Zbuduj obraz Docker
-cd contener_open_retrochem
+# 1. Build the Docker image
+cd OpenSynthTree
 docker compose build
 
-# 2. Pobierz dane (modele AiZynthFinder + baza rxn-insight)
-#    Dane zapisywane do ./data/ (persystentne, tylko za pierwszym razem)
+# 2. Download data (AiZynthFinder models + rxn-insight database)
+#    Data is saved to ./data/ (persistent, only needed once)
 docker compose run --rm app download
 
-# 3. Uruchom konsolę interaktywną
+# 3. Launch the interactive console
 docker compose run --rm app
 
-# 4. Lub uruchom skrypt batchowy (predefiniowane cząsteczki)
+# 4. Or run the batch script (predefined molecules)
 docker compose run --rm app batch
 ```
 
-## Tryby uruchamiania
+## Run modes
 
-| Komenda | Opis |
+| Command | Description |
 |---|---|
-| `docker compose run --rm app` | Konsola interaktywna (REPL) |
-| `docker compose run --rm app console` | j.w. (jawny tryb) |
-| `docker compose run --rm app batch` | Skrypt batchowy |
-| `docker compose run --rm app download` | Pobieranie danych |
-| `docker compose run --rm app shell` | Powłoka bash (debug) |
+| `docker compose run --rm app` | Interactive console (REPL) |
+| `docker compose run --rm app console` | Same as above (explicit mode) |
+| `docker compose run --rm app batch` | Batch script |
+| `docker compose run --rm app download` | Download data |
+| `docker compose run --rm app shell` | Bash shell (debug) |
 
-## Komendy konsoli
+## Console commands
 
-| Polecenie | Opis |
+| Command | Description |
 |---|---|
-| `<nazwa>` | Nazwa cząsteczki (np. `aspirin`) → PubChem SMILES → opis MolT5 + PNG |
-| `smiles <SMILES>` | Bezpośredni SMILES → opis MolT5 + wizualizacja |
-| `caption <opis>` | Opis tekstowy → wygenerowany SMILES (MolT5) |
-| `retro <nazwa/SMILES> [N]` | Retrosynteza AiZynthFinder — top N tras + analiza rxn-insight |
-| `help` | Lista poleceń |
-| `quit` / `exit` / `q` | Wyjście |
+| `<name>` | Molecule name (e.g. `aspirin`) — PubChem SMILES lookup — MolT5 caption + PNG |
+| `smiles <SMILES>` | Direct SMILES — MolT5 caption + visualization |
+| `caption <description>` | Text description — generate SMILES (MolT5) |
+| `retro <name/SMILES> [N]` | AiZynthFinder retrosynthesis — top N routes + rxn-insight analysis |
+| `help` | List commands |
+| `quit` / `exit` / `q` | Exit |
 
-## Struktura danych (volumes)
+## Data structure (volumes)
 
-Dane są montowane z hosta do kontenera jako volumes — persystentne między uruchomieniami:
+Data is mounted from the host into the container as volumes — persistent across runs:
 
 ```
-contener_open_retrochem/
-├── data/                           # tworzony automatycznie
-│   ├── aizynth_data/               # modele USPTO (~790 MB)
+OpenSynthTree/
+├── data/                           # created automatically
+│   ├── aizynth_data/               # USPTO models (~790 MB)
 │   │   ├── config.yml
 │   │   ├── uspto_model.onnx
 │   │   ├── uspto_templates.csv.gz
@@ -74,55 +74,56 @@ contener_open_retrochem/
 │   │   ├── uspto_ringbreaker_templates.csv.gz
 │   │   ├── uspto_filter_model.onnx
 │   │   └── zinc_stock.hdf5
-│   ├── rxn_insight_data/           # baza reakcji (~1.5 GB)
+│   ├── rxn_insight_data/           # reaction database (~1.5 GB)
 │   │   └── uspto_rxn_insight.gzip
-│   └── huggingface_cache/          # modele MolT5 (~6.3 GB)
-└── output/                         # wyniki PNG
+│   └── huggingface_cache/          # MolT5 models (~6.3 GB)
+└── output/                         # PNG results
 ```
 
-## Struktura projektu
+## Project structure
 
 ```
-contener_open_retrochem/
+OpenSynthTree/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .dockerignore
-├── entrypoint.sh               # punkt wejścia kontenera
-├── download_data.sh            # skrypt pobierania danych
-├── requirements.txt            # zależności Python
+├── .gitignore
+├── entrypoint.sh               # container entrypoint
+├── download_data.sh            # data download script
+├── requirements.txt            # Python dependencies
 ├── LICENSE                     # MIT
-├── THIRD-PARTY-NOTICES.md      # licencje zależności
-├── README.md                   # ten plik
+├── THIRD-PARTY-NOTICES.md      # third-party licenses
+├── README.md                   # this file
 └── src/
-    ├── console.py              # konsola interaktywna (REPL)
-    ├── main.py                 # skrypt batchowy
+    ├── console.py              # interactive console (REPL)
+    ├── main.py                 # batch script
     └── aizynth_data/
-        └── config.yml          # konfiguracja ścieżek kontenerowych
+        └── config.yml          # container path configuration
 ```
 
-## Zmienne środowiskowe
+## Environment variables
 
-| Zmienna | Domyślna | Opis |
+| Variable | Default | Description |
 |---|---|---|
-| `RETROCHEM_DEVICE` | `cpu` | Urządzenie obliczeniowe (`cpu`, `cuda`) |
-| `RETROCHEM_DATA_DIR` | `/app/data` | Ścieżka do danych w kontenerze |
-| `RETROCHEM_OUTPUT_DIR` | `/app/output` | Ścieżka do wyników PNG |
+| `RETROCHEM_DEVICE` | `cpu` | Compute device (`cpu`, `cuda`) |
+| `RETROCHEM_DATA_DIR` | `/app/data` | Data path inside the container |
+| `RETROCHEM_OUTPUT_DIR` | `/app/output` | PNG output path |
 
-## Użycie z istniejącymi danymi
+## Using existing data
 
-Jeśli masz już pobrane dane (np. z wcześniejszej instalacji), skopiuj je do odpowiednich folderów:
+If you already have downloaded data (e.g. from a previous installation), copy it to the appropriate folders:
 
 ```bash
-# Modele AiZynthFinder
-cp -r /ścieżka/do/aizynth_data/* ./data/aizynth_data/
+# AiZynthFinder models
+cp -r /path/to/aizynth_data/* ./data/aizynth_data/
 
-# Baza rxn-insight
-cp /ścieżka/do/uspto_rxn_insight.gzip ./data/rxn_insight_data/
+# rxn-insight database
+cp /path/to/uspto_rxn_insight.gzip ./data/rxn_insight_data/
 ```
 
 ## GPU (CUDA)
 
-Aby użyć GPU NVIDIA, zmień `docker-compose.yml`:
+To use an NVIDIA GPU, modify `docker-compose.yml`:
 
 ```yaml
 services:
@@ -139,14 +140,13 @@ services:
               capabilities: [gpu]
 ```
 
-I zbuduj obraz z bazą `pytorch/pytorch:*-cuda*-runtime`:
-zmień pierwszą linię `Dockerfile` na np.:
+And build the image with a CUDA base image — change the first line of the `Dockerfile` to e.g.:
 ```dockerfile
 FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime AS base
 ```
 
-## Licencja
+## License
 
-MIT License — patrz [LICENSE](LICENSE).
+MIT License — see [LICENSE](LICENSE).
 
-Licencje zależności — patrz [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+Third-party licenses — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
