@@ -34,8 +34,7 @@ WORKDIR /app
 # Instalacja zależności Python (osobna warstwa — cache)
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install aizynthfinder>=4.0.0 --no-deps && \
-    pip install -r requirements.txt
+    pip install 'aizynthfinder==4.4.1' -r requirements.txt
 
 # Kopiowanie kodu źródłowego
 COPY src/ /app/src/
